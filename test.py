@@ -1,6 +1,5 @@
 import cv2
 from cvzone.PoseModule import PoseDetector
-import ipdb
 import cvzone
 import time;
 from pynput.keyboard import Key, Controller
@@ -8,10 +7,8 @@ from cvzone.HandTrackingModule import HandDetector
 
 kb = Controller()
 
-
-
 def get_col(x, width):
-    if x <= width * 3.8: 
+    if x <= width * 3.7: 
         return 1
     elif x < width * 4.9: 
         return 2
@@ -22,13 +19,12 @@ def get_col(x, width):
 def get_row(y, height): 
     if y < height * 4: 
         return 1
-    elif y < height * 4.75:
+    elif y < height * 5:
         return 2
     else: 
         return 3
 
 
-# ipdb.set_trace()
 detector = PoseDetector()
 hand_detector = HandDetector(staticMode=False, maxHands=2, modelComplexity=1, detectionCon=0.5, minTrackCon=0.5)
 cap = cv2.VideoCapture(0)
@@ -43,8 +39,22 @@ centerX, centerY = (w//2), (h//2)
 colX = w//9
 rowY = h//9
 
-moved = True
-count = 0
+# while (cap.isOpened()): 
+#     img = detector.findPose(img,draw=False)
+#     lmlist, bbox = detector.findPosition(img, draw=True, bboxWithHands=False)
+#     if bbox: 
+#         # print(bbox)
+#         calibration_center = bbox["center"]
+#         print(calibration_center[0])
+#         print(get_col(calibration_center[0], colX))
+#         if(get_col(calibration_center[0], colX) == 1 or get_col(calibration_center[0], colX) == 3):
+#             # print("CALIBRATION IS OFF++++++++++++++++")
+#             # cvzone.putText(img, "MOVE INTO THE CENTER OF THE FRAME", (50, 50), font=cv2.FONT_HERSHEY_PLAIN)
+#             cv2.imshow("Image", img)
+#         else: 
+#             break; 
+
+
 while(cap.isOpened()):
     success, img = cap.read()
     hands, img = hand_detector.findHands(img, draw=True, flipType=True)
@@ -154,7 +164,9 @@ while(cap.isOpened()):
 
             curr_row = next_row
 
-    # cv2.imshow("Image", img)
+
+    # print(bbox)
+    cv2.imshow("Image", img)
     cv2.waitKey(1)
 
 
@@ -184,9 +196,9 @@ while(cap.isOpened()):
 #     # print(newX - oldX)
 #     # print("XWidth")
 #     # print(bbox_width//3)
-#     if(newX - oldX > bbox_width//2):
+#     if(newX - oldX > bbox_width//3.25):
 #         return 3
-#     elif (oldX - newX > bbox_width//2): 
+#     elif (oldX - newX > bbox_width//3.25): 
 #         return 1
 #     else: return 2
 
@@ -194,24 +206,24 @@ while(cap.isOpened()):
 #     # print("Y-val")
 #     # print("YWidth")
 #     # print(newY - oldY)
-#     # print(bbox_height//3)
-#     if(newY - oldY > bbox_height//12):
+#      # print(bbox_height//3)
+#     if(newY - oldY > bbox_height//4.5) : 
 #         return 3
-#     elif (oldY - newY > bbox_height//7): 
+#     elif (oldY - newY > bbox_height//4.5):
 #         return 1
 #     else: return 2
 
 # # def get_col(x, width):
 # #     if x <= width * 3.8: 
-# #         return 1
-# #     elif x < width * 4.9: 
-# #         return 2
-# #     else: 
-# #         return 3
-
-
-# # def get_row(y, height): 
-# #     if y < height * 4: 
+# #         ret.    urn 1
+# #     elif x < wi dth * 4.9: 
+# #         return  2
+# #     else:  
+# #         ret urn 3
+ 
+ 
+# # .  def get_row(y, height): 
+# #      if y < height * 4: 
 # #         return 1
 # #     elif y < height * 4.75:
 # #         return 2
@@ -239,6 +251,10 @@ while(cap.isOpened()):
 
 # oldX=9999
 # oldY=9999
+# just_went_up = True
+# just_went_down = True
+# in_bounds = 0
+
 # while(cap.isOpened()):
 
 #     success, img = cap.read()
@@ -327,7 +343,19 @@ while(cap.isOpened()):
 
 
 #         next_col = get_col(oldX, center[0], colX)
-#         next_row = get_row(oldY, center[1], rowY)
+#         next_row = get_row(oldY, center[1], colX)
+
+#         # print("IM HERE_____________________________________________________")
+
+#         if(((next_col == 2 and next_row == 2) and (curr_col!=2 or curr_row!=2))):
+#             print("SOMETHING")
+#             curr_row = next_row
+#             curr_col = next_col
+#             continue
+
+#         # if (next_col != 2 or next_row != 2) and (curr_col == 2 or curr_row == 2):
+#         #     curr_row = next_row 
+#         #     curr_col = next_col
 
 #         print(center)
 #         print("column", sep = " ")
@@ -336,19 +364,21 @@ while(cap.isOpened()):
 #         print(get_row(oldY, center[1], rowY))
 #         if (next_col != curr_col): 
 #             diff_col = next_col - curr_col
-#             if (diff_col == -1): 
-#                 print("Moved 1 left")
+#             if (diff_col == -1 and in_bounds != 1): 
+#                 print("Moved 1 right")
 #                 oldX=center[0]
 #                 oldY=center[1]
 #                 kb.press(Key.right) 
 #                 kb.release(Key.right)
+#                 in_bounds += 1
 #                 # moved == True
-#             else: 
-#                 print("Moved 1 right")
+#             elif(diff_col == 1 and in_bounds != -1): 
+#                 print("Moved 1 left")
 #                 oldX=center[0]
 #                 oldY=center[1]
 #                 kb.press(Key.left) 
 #                 kb.release(Key.left)
+#                 in_bounds -= 1
 #                 # moved == True
 
 #             curr_col = next_col 
@@ -362,20 +392,32 @@ while(cap.isOpened()):
 #                 curr_row = next_row
 #                 continue
 #             elif (diff_row == -1): 
-#                 print("Moved 1 up-------------------")
-#                 oldX=center[0]
-#                 oldY=center[1]
-#                 kb.tap(Key.up)
+#                 if(just_went_down == False):
+#                     just_went_down = True
+#                     oldX=center[0]
+#                     oldY=center[1]
+#                 else:
+#                     print("Moved 1 up-------------------")
+#                     oldX=center[0]
+#                     oldY=center[1]
+#                     kb.tap(Key.up)
+#                     just_went_up = False
 #                 # moved == True
 #             else: 
-#                 print("Moved 1 down---------------")
-#                 oldX=center[0]
-#                 oldY=center[1]
-#                 kb.tap(Key.down)
+#                 if(just_went_up == False):
+#                     just_went_up = True
+#                     oldX=center[0]
+#                     oldY=center[1]
+#                 else:
+#                     kb.tap(Key.down)
+#                     print("Moved 1 down---------------")
+#                     oldX=center[0]
+#                     oldY=center[1]
+#                     just_went_down = False
 #                 # moved == True
 
 #             curr_row = next_row
         
 
-#     cv2.imshow("Image", img)
+#     #cv2.imshow("Image", img)
 #     cv2.waitKey(1)
